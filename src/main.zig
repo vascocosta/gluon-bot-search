@@ -1,6 +1,11 @@
 const std = @import("std");
 const zeit = @import("zeit");
 
+const Allocator = std.mem.Allocator;
+const File = std.fs.File;
+const ArrayList = std.ArrayList;
+const WordList = [MAX_SEARCH_WORDS][]const u8;
+
 const EVENTS_FILE = "/home/gluon/events.csv";
 const MAX_EVENTS = 5;
 const MAX_SEARCH_WORDS = 4;
@@ -16,7 +21,7 @@ const Event = struct {
     notify: bool,
 };
 
-fn toLower(allocator: std.mem.Allocator, input: []const u8) ![]u8 {
+fn toLower(allocator: Allocator, input: []const u8) ![]u8 {
     var result = try allocator.alloc(u8, input.len);
 
     for (input, 0..input.len) |c, i| {
@@ -40,7 +45,7 @@ fn futureEvent(event: *const Event) !bool {
     return event_instant.timestamp > now_instant.timestamp;
 }
 
-fn search(allocator: std.mem.Allocator, file_size: u64, search_words: [MAX_SEARCH_WORDS][]const u8, file: *const std.fs.File) !void {
+fn search(allocator: Allocator, file_size: u64, search_words: WordList, file: *const File) !void {
     const stdout = std.io.getStdOut().writer();
 
     const buf = try allocator.alloc(u8, std.math.clamp(file_size, 0, MAX_FILE_SIZE));
@@ -50,7 +55,7 @@ fn search(allocator: std.mem.Allocator, file_size: u64, search_words: [MAX_SEARC
         return;
     };
 
-    var events = std.ArrayList(Event).init(allocator);
+    var events = ArrayList(Event).init(allocator);
     defer events.deinit();
 
     var lines = std.mem.splitSequence(u8, buf, "\n");
@@ -130,7 +135,7 @@ pub fn main() !void {
         return;
     }
 
-    var search_words: [MAX_SEARCH_WORDS][]const u8 = .{ "", "", "", "" };
+    var search_words: WordList = .{ "", "", "", "" };
     var i: usize = 0;
     while (i < MAX_SEARCH_WORDS) {
         if (args.next()) |arg| {
