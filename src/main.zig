@@ -4,7 +4,7 @@ const zeit = @import("zeit");
 const EVENTS_FILE = "/home/gluon/events.csv";
 const MAX_EVENTS = 5;
 const MAX_SEARCH_WORDS = 4;
-const MAX_FILE_SIZE = 100_000;
+const MAX_FILE_SIZE = 500_000;
 
 const Event = struct {
     category: []const u8,
@@ -40,10 +40,10 @@ fn futureEvent(event: *const Event) !bool {
     return event_instant.timestamp > now_instant.timestamp;
 }
 
-fn search(allocator: std.mem.Allocator, search_words: [MAX_SEARCH_WORDS][]const u8, file: *const std.fs.File) !void {
+fn search(allocator: std.mem.Allocator, file_size: u64, search_words: [MAX_SEARCH_WORDS][]const u8, file: *const std.fs.File) !void {
     const stdout = std.io.getStdOut().writer();
 
-    const buf = try allocator.alloc(u8, MAX_FILE_SIZE);
+    const buf = try allocator.alloc(u8, std.math.clamp(file_size, 0, MAX_FILE_SIZE));
     _ = file.readAll(buf) catch {
         std.debug.print("Error reading file: {s}\n", .{EVENTS_FILE});
 
@@ -141,5 +141,8 @@ pub fn main() !void {
         }
     }
 
-    try search(allocator, search_words, &file);
+    const file_metadata = try file.metadata();
+    const file_size = file_metadata.size();
+
+    try search(allocator, file_size, search_words, &file);
 }
