@@ -96,7 +96,19 @@ fn search(allocator: Allocator, file_size: u64, search_words: WordList, file: *c
         }
 
         if (found and event_count <= MAX_EVENTS) {
-            try stdout.print("{d:0>2}/{d:0>2}/{d} {d:0>2}:{d:0>2} UTC | {s} | {s} | {s}\n", .{ event.time.day, @intFromEnum(event.time.month), event.time.year, event.time.hour, event.time.minute, event.category, event.name, event.description });
+            try stdout.print(
+                "{d:0>2}/{d:0>2}/{d} {d:0>2}:{d:0>2} UTC | {s} | {s} | {s}\n",
+                .{
+                    event.time.day,
+                    @intFromEnum(event.time.month),
+                    event.time.year,
+                    event.time.hour,
+                    event.time.minute,
+                    event.category,
+                    event.name,
+                    event.description,
+                },
+            );
         }
     }
 }
