@@ -24,8 +24,9 @@
     // internet connectivity.
     .dependencies = .{
         .zeit = .{
-            .url = "https://github.com/rockorager/zeit/archive/refs/tags/v0.3.0.tar.gz",
-            .hash = "1220fb41de06f30dbb8ad57118fa72ddb9685c42b0353fe194e6eff555596b5e30d6",
+            //.url = "https://github.com/rockorager/zeit/archive/refs/tags/v0.3.0.tar.gz",
+            //.hash = "1220fb41de06f30dbb8ad57118fa72ddb9685c42b0353fe194e6eff555596b5e30d6",
+            .path = "./libs/zeit",
         },
     },
     // Specifies the set of files and directories that are included in this package.

@@ -38,13 +38,6 @@ fn compareEventTime(_: void, lhs: Event, rhs: Event) bool {
     return lhs_instant.timestamp < rhs_instant.timestamp;
 }
 
-fn futureEvent(event: *const Event) !bool {
-    const now_instant = try zeit.instant(.{});
-    const event_instant = event.time.instant();
-
-    return event_instant.timestamp > now_instant.timestamp;
-}
-
 fn search(allocator: Allocator, file_size: u64, search_words: WordList, file: *const File) !void {
     const stdout = std.io.getStdOut().writer();
 
@@ -75,7 +68,9 @@ fn search(allocator: Allocator, file_size: u64, search_words: WordList, file: *c
             .notify = false,
         };
 
-        if (try futureEvent(&event)) {
+        const now_instant = try zeit.instant(.{});
+
+        if (event.time.after(now_instant.time())) {
             try events.append(event);
         }
     }
