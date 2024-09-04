@@ -1,11 +1,6 @@
 const std = @import("std");
 const zeit = @import("zeit");
 
-const Allocator = std.mem.Allocator;
-const File = std.fs.File;
-const ArrayList = std.ArrayList;
-const WordList = [MAX_SEARCH_WORDS][]const u8;
-
 const EVENTS_FILE = "/home/gluon/events.csv";
 const TIME_ZONES_FILE = "/home/gluon/time_zones.csv";
 const MAX_EVENTS = 5;
@@ -23,7 +18,7 @@ const Event = struct {
     notify: bool,
 };
 
-fn toLower(allocator: Allocator, input: []const u8) ![]u8 {
+fn toLower(allocator: std.mem.Allocator, input: []const u8) ![]u8 {
     var result = try allocator.alloc(u8, input.len);
 
     for (input, 0..input.len) |c, i| {
@@ -40,7 +35,7 @@ fn compareEventTime(_: void, lhs: Event, rhs: Event) bool {
     return lhs_instant.timestamp < rhs_instant.timestamp;
 }
 
-fn timeInTimezone(allocator: Allocator, time: zeit.Time, tz_str: []const u8) !zeit.Time {
+fn timeInTimezone(allocator: std.mem.Allocator, time: zeit.Time, tz_str: []const u8) !zeit.Time {
     const time_zone = try zeit.loadTimeZone(allocator, std.meta.stringToEnum(zeit.Location, tz_str) orelse .@"Europe/London", null);
     const utc_instant = time.instant();
     const time_zone_instant = utc_instant.in(&time_zone);
@@ -48,7 +43,7 @@ fn timeInTimezone(allocator: Allocator, time: zeit.Time, tz_str: []const u8) !ze
     return time_zone_instant.time();
 }
 
-fn timeZoneName(allocator: Allocator, nick: []const u8) ![]const u8 {
+fn timeZoneName(allocator: std.mem.Allocator, nick: []const u8) ![]const u8 {
     const file = try std.fs.openFileAbsolute(TIME_ZONES_FILE, .{});
     const file_metadata = try file.metadata();
     const file_size = file_metadata.size();
@@ -68,13 +63,19 @@ fn timeZoneName(allocator: Allocator, nick: []const u8) ![]const u8 {
     } else DEFAULT_TIME_ZONE;
 }
 
-fn search(allocator: Allocator, file_size: u64, nick: []const u8, search_words: WordList, file: *const File) !void {
+fn search(
+    allocator: std.mem.Allocator,
+    file_size: u64,
+    nick: []const u8,
+    search_words: [MAX_SEARCH_WORDS][]const u8,
+    file: *const std.fs.File,
+) !void {
     const stdout = std.io.getStdOut().writer();
 
     const buf = try allocator.alloc(u8, std.math.clamp(file_size, 0, MAX_FILE_SIZE));
     _ = try file.readAll(buf);
 
-    var events = ArrayList(Event).init(allocator);
+    var events = std.ArrayList(Event).init(allocator);
     defer events.deinit();
 
     var lines = std.mem.splitSequence(u8, buf, "\n");
@@ -161,7 +162,7 @@ pub fn main() !void {
         std.process.exit(1);
     }
 
-    var search_words: WordList = .{ "", "", "", "" };
+    var search_words: [MAX_SEARCH_WORDS][]const u8 = .{ "", "", "", "" };
     var i: usize = 0;
     while (i < MAX_SEARCH_WORDS) {
         if (args.next()) |arg| {
