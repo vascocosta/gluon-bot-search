@@ -55,19 +55,17 @@ fn timeZoneName(allocator: Allocator, nick: []const u8) ![]const u8 {
     const buf = try allocator.alloc(u8, std.math.clamp(file_size, 0, MAX_FILE_SIZE));
     _ = try file.readAll(buf);
 
-    var time_zone_field: []const u8 = DEFAULT_TIME_ZONE;
     var lines = std.mem.splitSequence(u8, buf, "\n");
-    while (lines.next()) |line| {
+
+    return while (lines.next()) |line| {
         var fields = std.mem.splitSequence(u8, line, ",");
         const nick_field = try toLower(allocator, fields.next() orelse "NA");
-        time_zone_field = fields.next() orelse DEFAULT_TIME_ZONE;
+        const time_zone_field = fields.next() orelse DEFAULT_TIME_ZONE;
 
         if (std.mem.eql(u8, nick_field, try toLower(allocator, nick))) {
-            break;
+            break time_zone_field;
         }
-    }
-
-    return time_zone_field;
+    } else DEFAULT_TIME_ZONE;
 }
 
 fn search(allocator: Allocator, file_size: u64, nick: []const u8, search_words: WordList, file: *const File) !void {
@@ -179,5 +177,6 @@ pub fn main() !void {
 
     search(allocator, file_size, nick, search_words, &file) catch |err| {
         try stdout.print("Error searching events: {}", .{err});
+        std.process.exit(1);
     };
 }
