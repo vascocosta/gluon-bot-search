@@ -36,7 +36,7 @@ fn compareEventTime(_: void, lhs: Event, rhs: Event) bool {
 }
 
 fn timeInTimezone(allocator: std.mem.Allocator, time: zeit.Time, tz_str: []const u8) !zeit.Time {
-    const time_zone = try zeit.loadTimeZone(allocator, std.meta.stringToEnum(zeit.Location, tz_str) orelse .@"Europe/London", null);
+    const time_zone = try zeit.loadTimeZone(allocator, std.meta.stringToEnum(zeit.Location, tz_str) orelse .@"Europe/Berlin", null);
     const utc_instant = time.instant();
     const time_zone_instant = utc_instant.in(&time_zone);
 
@@ -117,15 +117,17 @@ fn search(
         }
 
         if (found and event_count <= MAX_EVENTS) {
-            event.time = try timeInTimezone(allocator, event.time, try timeZoneName(allocator, nick));
+            const time_zone_name = try timeZoneName(allocator, nick);
+            event.time = try timeInTimezone(allocator, event.time, time_zone_name);
             try stdout.print(
-                "{d:0>2}/{d:0>2}/{d} {d:0>2}:{d:0>2} | {s} | {s} | {s}\n",
+                "{d:0>2}/{d:0>2}/{d} {d:0>2}:{d:0>2} ({s}) | {s} | {s} | {s}\n",
                 .{
                     event.time.day,
                     @intFromEnum(event.time.month),
                     event.time.year,
                     event.time.hour,
                     event.time.minute,
+                    time_zone_name,
                     event.category,
                     event.name,
                     event.description,
