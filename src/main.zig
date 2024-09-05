@@ -6,7 +6,7 @@ const TIME_ZONES_FILE = "/home/gluon/time_zones.csv";
 const MAX_EVENTS = 5;
 const MAX_SEARCH_WORDS = 4;
 const MAX_FILE_SIZE = 500_000;
-const DEFAULT_TIME_ZONE = "Europe/Berlin";
+const DEFAULT_TIME_ZONE = "Etc/UTC";
 
 const Event = struct {
     category: []const u8,
@@ -36,7 +36,7 @@ fn compareEventTime(_: void, lhs: Event, rhs: Event) bool {
 }
 
 fn timeInTimezone(allocator: std.mem.Allocator, time: zeit.Time, tz_str: []const u8) !zeit.Time {
-    const time_zone = try zeit.loadTimeZone(allocator, std.meta.stringToEnum(zeit.Location, tz_str) orelse .@"Europe/Berlin", null);
+    const time_zone = try zeit.loadTimeZone(allocator, std.meta.stringToEnum(zeit.Location, tz_str) orelse .@"Etc/UTC", null);
     const utc_instant = time.instant();
     const time_zone_instant = utc_instant.in(&time_zone);
 
@@ -61,6 +61,16 @@ fn timeZoneName(allocator: std.mem.Allocator, nick: []const u8) ![]const u8 {
             break time_zone_field;
         }
     } else DEFAULT_TIME_ZONE;
+}
+
+fn shortTimeZoneName(time_zone_name: []const u8) []const u8 {
+    const index = std.mem.indexOfPos(u8, time_zone_name, 0, "/") orelse 0;
+
+    if (index > 0 and time_zone_name.len > index + 1) {
+        return time_zone_name[index + 1 ..];
+    } else {
+        return time_zone_name;
+    }
 }
 
 fn search(
@@ -127,7 +137,7 @@ fn search(
                     event.time.year,
                     event.time.hour,
                     event.time.minute,
-                    time_zone_name,
+                    shortTimeZoneName(time_zone_name),
                     event.category,
                     event.name,
                     event.description,
