@@ -35,7 +35,7 @@ fn compareEventTime(_: void, lhs: Event, rhs: Event) bool {
     return lhs_instant.timestamp < rhs_instant.timestamp;
 }
 
-fn timeInTimezone(allocator: std.mem.Allocator, time: zeit.Time, tz_str: []const u8) !zeit.Time {
+fn timeInTimeZone(allocator: std.mem.Allocator, time: zeit.Time, tz_str: []const u8) !zeit.Time {
     const time_zone = try zeit.loadTimeZone(allocator, std.meta.stringToEnum(zeit.Location, tz_str) orelse .@"Etc/UTC", null);
     const utc_instant = time.instant();
     const time_zone_instant = utc_instant.in(&time_zone);
@@ -128,7 +128,7 @@ fn search(
 
         if (found and event_count <= MAX_EVENTS) {
             const time_zone_name = try timeZoneName(allocator, nick);
-            event.time = try timeInTimezone(allocator, event.time, time_zone_name);
+            event.time = try timeInTimeZone(allocator, event.time, time_zone_name);
             try stdout.print(
                 "{d:0>2}/{d:0>2}/{d} {d:0>2}:{d:0>2} ({s}) | {s} | {s} | {s}\n",
                 .{
