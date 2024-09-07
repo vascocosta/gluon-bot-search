@@ -28,6 +28,7 @@ pub fn build(b: *std.Build) void {
     });
 
     exe.root_module.addImport("zeit", zeit.module("zeit"));
+    // exe.linkLibC();
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

@@ -1,8 +1,8 @@
 const std = @import("std");
 const zeit = @import("zeit");
 
-const EVENTS_FILE = "/home/gluon/events.csv";
-const TIME_ZONES_FILE = "/home/gluon/time_zones.csv";
+const EVENTS_FILE = "/home/gluon/var/irc/bots/Vettel/data/events.csv";
+const TIME_ZONES_FILE = "/home/gluon/var/irc/bots/Vettel/data/time_zones.csv";
 const MAX_EVENTS = 5;
 const MAX_SEARCH_WORDS = 4;
 const MAX_FILE_SIZE = 500_000;
@@ -129,14 +129,15 @@ fn search(
         if (found and event_count <= MAX_EVENTS) {
             const time_zone_name = try timeZoneName(allocator, nick);
             event.time = try timeInTimeZone(allocator, event.time, time_zone_name);
+            try event.time.strftime(stdout, "%a %d %B %H:%M");
             try stdout.print(
-                "{d:0>2}/{d:0>2}/{d} {d:0>2}:{d:0>2} ({s}) | {s} | {s} | {s}\n",
+                " ({s}) | {s} | {s} | {s}\n",
                 .{
-                    event.time.day,
-                    @intFromEnum(event.time.month),
-                    event.time.year,
-                    event.time.hour,
-                    event.time.minute,
+                    //event.time.day,
+                    //@intFromEnum(event.time.month),
+                    //event.time.year,
+                    //event.time.hour,
+                    //event.time.minute,
                     shortTimeZoneName(time_zone_name),
                     event.category,
                     event.name,
