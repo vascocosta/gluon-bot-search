@@ -175,6 +175,13 @@ pub fn main() !void {
         std.process.exit(1);
     }
 
+    if (args.next()) |arg| {
+        _ = arg;
+    } else {
+        try stdout.print("Channel must be passed as the second argument.\n", .{});
+        std.process.exit(1);
+    }
+
     var search_words: [MAX_SEARCH_WORDS][]const u8 = .{ "", "", "", "" };
     var i: usize = 0;
     while (i < MAX_SEARCH_WORDS) {
